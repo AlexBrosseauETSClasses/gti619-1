@@ -17,6 +17,7 @@ class CreateClientsTable extends Migration
             $table->id();
             $table->string('first_name');
             $table->string('last_name');
+            $table->string('type'); // 'residentiel' ou 'affaire'
             $table->timestamps();
         });
     }

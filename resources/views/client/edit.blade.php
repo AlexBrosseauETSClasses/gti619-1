@@ -15,9 +15,10 @@
           <li>{{$error}}</li>
          @endforeach
          </ul>
-  @endif 
-  <form method="post" action="{{route('client.update',['id'=>  $id])}}">
+  @endif
+  <form method="POST" action="{{ route('client.update', $client->id) }}">
    {{csrf_field()}}
+   @method('PUT')
    <input type="hidden" name="_method" value="PATCH" />
    <div class="form-group">
     <input type="text" name="first_name" class="form-control" value="{{$client->first_name}}" placeholder="Enter First Name" />

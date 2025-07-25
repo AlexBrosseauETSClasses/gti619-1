@@ -18,88 +18,61 @@ class ClientController extends Controller
         return view('client.index', compact('clients'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
+    public function residentiels()
+    {
+        $clients = Client::where('type', 'residentiel')->get();
+        return view('client.residentiels', compact('clients'));
+    }
+
+    public function affaires()
+    {
+        $clients = Client::where('type', 'affaire')->get();
+        return view('client.affaires', compact('clients'));
+    }
+
     public function create()
     {
         return view('client.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
-    { $this->validate($request, [
-        'first_name'    =>  'required',
-        'last_name'     =>  'required'
-    ]);
-    $client = new client([
-        'first_name'    =>  $request->get('first_name'),
-        'last_name'     =>  $request->get('last_name')
-    ]);
-    $client->save();
-    return redirect()->route('client.index')->with('success', 'Client ajouté');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
     {
-        //
+        $data = $request->validate([
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'type' => 'required|in:residentiel,affaire',
+        ]);
+
+        Client::create($data);
+        return redirect()->back()->with('success', 'Client ajouté.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
-        $client = Client::find($id);
+        $client = Client::findOrFail($id);
         return view('client.edit', compact('client', 'id'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
-        $this->validate($request, [
-            'first_name'    =>  'required',
-            'last_name'     =>  'required'
+        $data = $request->validate([
+            'first_name' => 'required',
+            'last_name' => 'required',
         ]);
-        $client = client::find($id);
-        $client->first_name = $request->get('first_name');
-        $client->last_name = $request->get('last_name');
-        $client->save();
-        return redirect()->route('client.index')->with('success', 'Client modifié');
+
+        Client::whereId($id)->update($data);
+        $type = Client::find($id)->type;
+        $routeName = $type === 'residentiel' ? 'clients.residentiels' : 'clients.affaires';
+        return redirect()->route($routeName)->with('success', 'Client mis à jour.');
+
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
-        $client = client::find($id);
-        $client->delete();
-        return redirect()->route('client.index')->with('success', 'Client supprimé');
+        Client::findOrFail($id)->delete();
+        return redirect()->back()->with('success', 'Client supprimé.');
     }
+
+
 }
