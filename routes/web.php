@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ClientController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -17,7 +17,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::resource('client', ClientController::class);
-Route::get('client/{id}/edit', 'ClientController@edit')->name('client.edit');
-Route::put('client/{id}', 'ClientController@update')->name('client.update');
-Route::delete('client/{id}', 'ClientController@destroy')->name('client.destroy');
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth'])->name('dashboard');
+
+require __DIR__.'/auth.php';
