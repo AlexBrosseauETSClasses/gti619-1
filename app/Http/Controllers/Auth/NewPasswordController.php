@@ -17,57 +17,55 @@ use Illuminate\Validation\Rules\Password as PasswordRule;
 
 class NewPasswordController extends Controller
 {
-    /**
-     * Display the password reset view.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
     public function create(Request $request)
     {
         return view('auth.reset-password', ['request' => $request]);
     }
 
-    /**
-     * Handle an incoming new password request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
-   public function store(Request $request)
+    public function store(Request $request)
     {
-        // Validation
-        $request->validate([
+        $settings = SecuritySetting::first();
+
+        $rules = [
             'email' => ['required', 'email'],
             'password' => ['required', 'confirmed'],
-        ]);
+        ];
+
+        if ($settings) {
+            $passwordRules = [PasswordRule::min($settings->min_password_length)];
+            $rules['password'] = array_merge($rules['password'], $passwordRules);
+        }
+
+        $request->validate($rules);
+
+        $errors = [];
+
+        if ($settings->require_uppercase && !preg_match('/[A-Z]/', $request->password)) {
+            $errors[] = 'Le mot de passe doit contenir au moins une lettre majuscule.';
+        }
+
+        if ($settings->require_numbers && !preg_match('/[0-9]/', $request->password)) {
+            $errors[] = 'Le mot de passe doit contenir au moins un chiffre.';
+        }
+
+        if ($settings->require_special_chars && !preg_match('/[\W_]/', $request->password)) {
+            $errors[] = 'Le mot de passe doit contenir au moins un caractère spécial.';
+        }
+
+        if (!empty($errors)) {
+            return back()->withErrors(['password' => implode(' ', $errors)]);
+        }
 
         $user = User::where('email', $request->email)->first();
-
         if (!$user) {
             return back()->withErrors(['email' => 'Utilisateur non trouvé.']);
         }
 
-        $settings = SecuritySetting::first(); // suppose qu’il n’y a qu’un seul enregistrement
-
-        //Vérifier la complexité du mot de passe
-        if ($settings && $settings->enforce_complexity) {
-            if (
-                strlen($request->password) < $settings->min_length ||
-                !preg_match('/[A-Z]/', $request->password) ||
-                !preg_match('/[a-z]/', $request->password) ||
-                !preg_match('/[0-9]/', $request->password)
-            ) {
-                return back()->withErrors(['password' => 'Le mot de passe ne respecte pas les critères de complexité.']);
-            }
-        }
-
-        //Empêcher la réutilisation des anciens mots de passe
         if ($settings && $settings->password_history_count > 0) {
             $previousPasswords = PreviousPassword::where('user_id', $user->id)
-                ->latest()->take($settings->password_history_count)->get();
+                ->latest()
+                ->take($settings->password_history_count)
+                ->get();
 
             foreach ($previousPasswords as $previous) {
                 if (Hash::check($request->password, $previous->password)) {
@@ -76,13 +74,11 @@ class NewPasswordController extends Controller
             }
         }
 
-        //Sauvegarder l’ancien mot de passe
         PreviousPassword::create([
             'user_id' => $user->id,
             'password' => $user->password,
         ]);
 
-        //Mettre à jour le mot de passe
         $user->password = Hash::make($request->password);
         $user->save();
 
@@ -90,6 +86,7 @@ class NewPasswordController extends Controller
 
         return redirect()->route('login')->with('status', 'Mot de passe réinitialisé.');
     }
+
     public function update(Request $request)
     {
         $request->validate([
@@ -102,7 +99,6 @@ class NewPasswordController extends Controller
             ],
         ]);
 
-        // old mdp
         if ($this->isPreviousPassword($request->user(), $request->password)) {
             return back()->withErrors(['password' => 'Ce mot de passe a déjà été utilisé.']);
         }
@@ -113,6 +109,7 @@ class NewPasswordController extends Controller
 
         return back()->with('status', 'Mot de passe mis à jour.');
     }
+
     protected function isPreviousPassword($user, $newPassword)
     {
         $history = $user->previousPasswords()->orderBy('created_at', 'desc')->take(5)->get();

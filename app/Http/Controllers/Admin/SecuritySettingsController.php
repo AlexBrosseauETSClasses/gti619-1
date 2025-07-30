@@ -11,29 +11,42 @@ class SecuritySettingsController extends Controller
     public function edit()
     {
         $settings = SecuritySetting::firstOrCreate([]);
-        return view('admin.dashboard', compact('settings'));
+        return view('admin.security-settings', compact('settings'));
     }
 
     public function update(Request $request)
     {
-        $request->validate([
-            'min_password_length' => 'required|integer|min:6',
-            'require_uppercase' => 'nullable|boolean',
-            'require_numbers' => 'nullable|boolean',
-            'require_special_chars' => 'nullable|boolean',
-            'password_history_count' => 'required|integer|min:0',
-        ]);
+        try {
+            $request->validate([
+                'min_password_length' => 'required|integer|min:1',
+                'require_uppercase' => 'nullable|in:on',
+                'require_numbers' => 'nullable|in:on',
+                'require_special_chars' => 'nullable|in:on',
+                'password_history_count' => 'required|integer|min:0',
+                'max_login_attempts' => 'required|integer|min:1',
+            ]);
 
-        $settings = SecuritySetting::firstOrCreate([]);
 
-        $settings->min_password_length = $request->min_password_length;
-        $settings->require_uppercase = $request->has('require_uppercase');
-        $settings->require_numbers = $request->has('require_numbers');
-        $settings->require_special_chars = $request->has('require_special_chars');
-        $settings->password_history_count = $request->password_history_count;
+            $settings = SecuritySetting::firstOrCreate([]);
 
-        $settings->save();
+            // Met à jour chaque truc
+            $settings->min_password_length = $request->min_password_length;
+            $settings->require_uppercase = $request->has('require_uppercase');
+            $settings->require_numbers = $request->has('require_numbers');
+            $settings->require_special_chars = $request->has('require_special_chars');
+            $settings->password_history_count = $request->password_history_count;
+            $settings->max_login_attempts = $request->max_login_attempts;
 
-        return redirect()->route('security.edit')->with('success', 'Paramètres mis à jour.');
+            $settings->save();
+
+            return redirect()->route('security.edit')
+                            ->with('success', 'Paramètres de sécurité mis à jour avec succès.');
+        } catch (\Exception $e) {
+            \Log::error('Erreur mise à jour paramètres sécurité : ' . $e->getMessage());
+
+            return redirect()->back()
+                ->with('error', 'Une erreur est survenue : ' . $e->getMessage());
+        }
     }
+
 }

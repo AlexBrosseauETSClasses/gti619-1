@@ -38,7 +38,7 @@ Route::delete('/client/{id}', [ClientController::class, 'destroy'])->name('clien
 //Client Update
 Route::put('/client/{id}', [ClientController::class, 'update'])->name('client.update');
 // Routes d'administration sécurisées
-Route::middleware(['auth', 'is-admin'])->group(function () {
+Route::middleware(['auth', 'role:Administrateur'])->group(function () {
     Route::get('/admin/security-settings', [SecuritySettingsController::class, 'edit'])->name('security.edit');
     Route::post('/admin/security-settings', [SecuritySettingsController::class, 'update'])->name('security.update');
 });
