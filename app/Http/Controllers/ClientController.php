@@ -31,11 +31,14 @@ class ClientController extends Controller
         return view('client.affaires', compact('clients'));
     }
 
-    public function create()
+    public function createAffaire()
     {
-        return view('client.create');
+        return view('client.create-affaire');
     }
-
+    public function createResidentiel()
+    {
+        return view('client.create-affaire');
+    }
     public function store(Request $request)
     {
         $data = $request->validate([

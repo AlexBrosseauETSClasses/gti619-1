@@ -33,7 +33,7 @@
    <input type="hidden" name="type" value="affaire">
    <div class="form-group">
     <input type="submit" class="btn btn-primary" value="Soumettre" />
-    <a href="{{ route('clients.affaires') }}" class="btn btn-secondary">Retour</a>
+    <a href="{{ route('clients.affaires') }}">Retour à la liste des affaires</a>
    </div>
   </form>
  </div>

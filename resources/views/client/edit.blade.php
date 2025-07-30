@@ -19,7 +19,7 @@
   <form method="POST" action="{{ route('client.update', $client->id) }}">
    {{csrf_field()}}
    @method('PUT')
-   <input type="hidden" name="_method" value="PATCH" />
+   <input type="hidden" name="_method" value="PUT" />
    <div class="form-group">
     <input type="text" name="first_name" class="form-control" value="{{$client->first_name}}" placeholder="Enter First Name" />
    </div>
