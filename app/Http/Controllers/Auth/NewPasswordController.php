@@ -81,6 +81,13 @@ class NewPasswordController extends Controller
 
         $user->password = Hash::make($request->password);
         $user->save();
+        $user = User::where('email', $request->email)->first();
+
+        if ($user) {
+            $user->is_locked = false; //Débloquer le compte
+            $user->login_attempts = 0; //Réinitialiser les tentatives
+            $user->save();
+        }
 
         Log::info("Mot de passe modifié pour l'utilisateur ID={$user->id}");
 
