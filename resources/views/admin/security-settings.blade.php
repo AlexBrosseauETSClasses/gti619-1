@@ -79,6 +79,8 @@
             </div>
 
             <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a href="{{ url('/admin/ajouter') }}">Ajouter un utilisateur</a>
+
         </form>
     </div>
 </div>

@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\SecuritySettingsController;
 use App\Models\Client;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\AdminUserController;
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -43,5 +45,17 @@ Route::middleware(['auth', 'role:Administrateur'])->group(function () {
     Route::post('/admin/security-settings', [SecuritySettingsController::class, 'update'])->name('security.update');
 });
 
+Route::middleware(['auth', 'role:Administrateur'])->group(function () {
+    Route::get('/admin/ajouter', [AdminUserController::class, 'create'])->name('admin.register');
+    Route::post('/admin/ajouter', [AdminUserController::class, 'store'])->name('admin.user.store');
+});
+
+Route::middleware('role:Préposé aux clients résidentiels|Administrateur')->group(function () {
+        Route::get('/clients/residentiels', [ClientController::class, 'residentiels'])->name('clients.residentiels');
+    });
+
+    Route::middleware('role:Préposé aux clients d’affaire|Administrateur')->group(function () {
+        Route::get('/clients/affaires', [ClientController::class, 'affaires'])->name('clients.affaires');
+    });
 require __DIR__.'/auth.php';
 
