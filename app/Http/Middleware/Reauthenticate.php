@@ -8,14 +8,16 @@ use Illuminate\Support\Facades\Session;
 
 class Reauthenticate
 {
-    public function handle(Request $request, Closure $next)
-    {
-        if (!Session::get('reauthenticated')) {
-            Session::put('redirect_after_reauth', $request->fullUrl());
-            return redirect()->route('reauth.show');
-        }
+   public function handle($request, \Closure $next)
+{
+    $lastReauth = session('reauthenticated_at');
 
-        return $next($request);
+    if (!$lastReauth || now()->diffInMinutes($lastReauth) > 5) {
+        session(['url.intended' => secure_url(request()->getRequestUri())]);
+        return redirect()->route('reauth.show');
     }
+
+    return $next($request);
+}
 }
 

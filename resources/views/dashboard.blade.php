@@ -12,6 +12,7 @@
                     You're logged in!
                 </div>
             </div>
+            <a href="{{ route('password.custom.reset') }}">Changer mon mot de passe</a>
         </div>
     </div>
 </x-app-layout>

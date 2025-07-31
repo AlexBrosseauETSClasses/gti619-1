@@ -5,7 +5,8 @@ use App\Http\Controllers\Admin\SecuritySettingsController;
 use App\Models\Client;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\AdminUserController;
-
+use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\ReauthController;
 Route::get('/', function () {
     return view('welcome');
 });
@@ -57,5 +58,15 @@ Route::middleware('role:Préposé aux clients résidentiels|Administrateur')->gr
     Route::middleware('role:Préposé aux clients d’affaire|Administrateur')->group(function () {
         Route::get('/clients/affaires', [ClientController::class, 'affaires'])->name('clients.affaires');
     });
+
+Route::middleware(['auth', 'reauth'])->group(function () {
+    Route::get('/password/custom-reset', [NewPasswordController::class, 'showCustomResetForm'])->name('password.custom.reset');
+    Route::post('/password/custom-reset', [NewPasswordController::class, 'updatePassword'])->name('password.custom.reset.submit');
+});
+Route::middleware('auth')->group(function () {
+    Route::get('/reauth', [ReauthController::class, 'showForm'])->name('reauth.show');
+    Route::post('/reauth', [ReauthController::class, 'reauthenticate'])->name('reauth.attempt');
+});
+
 require __DIR__.'/auth.php';
 
