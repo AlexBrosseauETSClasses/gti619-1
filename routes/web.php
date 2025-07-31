@@ -46,7 +46,7 @@ Route::middleware(['auth', 'role:Administrateur'])->group(function () {
     Route::post('/admin/security-settings', [SecuritySettingsController::class, 'update'])->name('security.update');
 });
 
-Route::middleware(['auth', 'role:Administrateur'])->group(function () {
+Route::middleware(['auth', 'role:Administrateur','reauth'])->group(function () {
     Route::get('/admin/ajouter', [AdminUserController::class, 'create'])->name('admin.register');
     Route::post('/admin/ajouter', [AdminUserController::class, 'store'])->name('admin.user.store');
 });
